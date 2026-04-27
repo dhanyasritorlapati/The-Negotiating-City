@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Negotiating City - Urban Co-Design Platform</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        /* Header */
+        .header {
+            background: #1e293b;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            border-bottom: 4px solid #f59e0b;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+            color: #f59e0b;
+        }
+        
+        /* Main Content Grid */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f1f5f9;
+            min-height: 700px;
+        }
+        
+        /* Panels */
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .panel h2 {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Stakeholder Cards */
+        .stakeholders-list {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .stakeholder-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid #94a3b8;
+        }
+        
+        .stakeholder-card.speaking {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .stakeholder-name {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .satisfaction-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            background: #e2e8f0;
+            font-size: 0.8rem;
+        }
+        
+        .satisfaction-badge.high { background: #10b981; color: white; }
+        .satisfaction-badge.medium { background: #f59e0b; color: white; }
+        .satisfaction-badge.low { background: #ef4444; color: white; }
+        
+        /* Canvas */
+        .canvas-container {
+            padding: 1rem;
+            flex: 1;
+            position: relative;
+        }
+        
+        #designCanvas {
+            width: 100%;
+            height: 350px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+        }
+        
+        .canvas-tools {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            gap: 0.25rem;
+            background: white;
+            padding: 0.25rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .tool-btn.active {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        /* Chat */
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        
+        .message {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            flex: 1;
+        }
+        
+        .message.system .message-content {
+            background: #1e293b;
+            color: white;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-success { background: #10b981; color: white; }
+        .btn-primary { background: #f59e0b; color: white; }
+        .btn-warning { background: #ef4444; color: white; }
+        .btn-icon { width: 36px; height: 36px; justify-content: center; }
+        
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .pulse { animation: buttonPulse 1s infinite; }
+        @keyframes buttonPulse { 0% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-city"></i>
+                <h1>The Negotiating City</h1>
+            </div>
+            <div class="header-controls">
+                <button id="newSessionBtn" class="btn btn-icon"><i class="fas fa-plus"></i></button>
+                <button id="settingsBtn" class="btn btn-icon"><i class="fas fa-cog"></i></button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-users"></i> Stakeholders</h2>
+                <div class="stakeholders-list" id="stakeholdersList"></div>
+                <div style="padding: 1rem;">
+                    <button id="startBtn" class="btn btn-success" style="width: 100%;">
+                        <i class="fas fa-play"></i> Start Negotiation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Center Panel -->
+            <div class="panel">
+                <div style="padding: 1rem; display: flex; justify-content: space-between;">
+                    <h2><i class="fas fa-draw-polygon"></i> Design Canvas</h2>
+                    <div>
+                        <span><i class="fas fa-ruler"></i> <span id="areaUsed">0</span>/8000 m²</span>
+                        <span style="margin-left: 1rem;"><i class="fas fa-coins"></i> $<span id="budgetUsed">0</span>/1M</span>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="designCanvas" width="600" height="350"></canvas>
+                    <div class="canvas-tools">
+                        <button class="tool-btn active" data-tool="select">🔍</button>
+                        <button class="tool-btn" data-tool="playground">🧸</button>
+                        <button class="tool-btn" data-tool="greenspace">🌿</button>
+                        <button class="tool-btn" data-tool="cafe">☕</button>
+                        <button class="tool-btn" data-tool="bench">🪑</button>
+                    </div>
+                </div>
+
+                <div style="padding: 1rem; border-top: 1px solid #e2e8f0;">
+                    <h3>Design Elements</h3>
+                    <div id="elementsList" style="margin-top: 0.5rem;"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="panel">
+                <h2><i class="fas fa-comments"></i> Negotiation</h2>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div style="padding: 1rem; display: flex; gap: 0.5rem;">
+                    <button id="nextTurnBtn" class="btn btn-primary" disabled>
+                        <i class="fas fa-step-forward"></i> Next
+                    </button>
+                    <button id="voteBtn" class="btn btn-warning" disabled>
+                        <i class="fas fa-vote-yea"></i> Vote
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <h3 style="margin-bottom: 1rem;">Settings</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label>Speed:</label>
+                    <select id="speedSelect">
+                        <option value="1000">Slow</option>
+                        <option value="500" selected>Normal</option>
+                        <option value="200">Fast</option>
+                    </select>
+                </div>
+                <button id="closeSettingsBtn" class="btn btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const STAKEHOLDERS = [
+            { id: 'maria', name: 'Maria', icon: '👩‍👧', color: '#FFB6C1', 
+              persona: 'Young mother who wants playgrounds',
+              priorities: { playground: 0.9, bench: 0.4, greenspace: 0.3 } },
+            { id: 'chen', name: 'Mr. Chen', icon: '👨‍💼', color: '#D2B48C', 
+              persona: 'Café owner who wants seating',
+              priorities: { cafe: 0.8, bench: 0.5, pathway: 0.4 } },
+            { id: 'anya', name: 'Anya', icon: '🌱', color: '#90EE90', 
+              persona: 'Environmentalist who wants green space',
+              priorities: { greenspace: 0.9, bench: 0.3, playground: 0.2 } },
+            { id: 'david', name: 'David', icon: '👴', color: '#87CEEB', 
+              persona: 'Senior who wants benches',
+              priorities: { bench: 0.9, pathway: 0.6, greenspace: 0.5 } },
+            { id: 'jayden', name: 'Jayden', icon: '🧑', color: '#FFD700', 
+              persona: 'Teenager who wants hangout spots',
+              priorities: { cafe: 0.6, playground: 0.5, bench: 0.4 } }
+        ];
+
+        // ==================== STATE ====================
+        let state = {
+            turn: 0,
+            active: false,
+            consensus: false,
+            elements: [],
+            totalArea: 0,
+            totalCost: 0,
+            satisfaction: {},
+            tool: 'select'
+        };
+
+        // Initialize satisfaction
+        STAKEHOLDERS.forEach(s => state.satisfaction[s.id] = 50);
+
+        // ==================== DOM ELEMENTS ====================
+        let stakeholdersList, chatMessages, startBtn, nextTurnBtn, voteBtn, 
+            newSessionBtn, settingsBtn, settingsModal, closeSettingsBtn,
+            canvas, ctx, areaSpan, budgetSpan, elementsList, speedSelect;
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('load', function() {
+            // Get all DOM elements
+            stakeholdersList = document.getElementById('stakeholdersList');
+            chatMessages = document.getElementById('chatMessages');
+            startBtn = document.getElementById('startBtn');
+            nextTurnBtn = document.getElementById('nextTurnBtn');
+            voteBtn = document.getElementById('voteBtn');
+            newSessionBtn = document.getElementById('newSessionBtn');
+            settingsBtn = document.getElementById('settingsBtn');
+            settingsModal = document.getElementById('settingsModal');
+            closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            canvas = document.getElementById('designCanvas');
+            areaSpan = document.getElementById('areaUsed');
+            budgetSpan = document.getElementById('budgetUsed');
+            elementsList = document.getElementById('elementsList');
+            speedSelect = document.getElementById('speedSelect');
+
+            // Set up canvas
+            if (canvas) {
+                ctx = canvas.getContext('2d');
+                drawGrid();
+            }
+
+            // Render initial UI
+            renderStakeholders();
+            addMessage('system', 'Welcome! Click "Start Negotiation" to begin.');
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        // ==================== EVENT LISTENERS ====================
+        function setupEventListeners() {
+            if (startBtn) startBtn.onclick = startNegotiation;
+            if (nextTurnBtn) nextTurnBtn.onclick = nextTurn;
+            if (voteBtn) voteBtn.onclick = conductVote;
+            if (newSessionBtn) newSessionBtn.onclick = resetSession;
+            if (settingsBtn) settingsBtn.onclick = () => settingsModal.classList.add('active');
+            if (closeSettingsBtn) closeSettingsBtn.onclick = () => settingsModal.classList.remove('active');
+            
+            // Tool buttons
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.onclick = function() {
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    state.tool = this.dataset.tool;
+                };
+            });
+            
+            // Canvas click
+            if (canvas) canvas.onclick = handleCanvasClick;
+            
+            // Close modal when clicking outside
+            window.onclick = function(e) {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.remove('active');
+                }
+            };
+        }
+
+        // ==================== RENDER FUNCTIONS ====================
+        function renderStakeholders() {
+            if (!stakeholdersList) return;
+            
+            let html = '';
+            STAKEHOLDERS.forEach(s => {
+                const sat = state.satisfaction[s.id] || 50;
+                let satClass = 'medium';
+                if (sat > 70) satClass = 'high';
+                if (sat < 40) satClass = 'low';
+                
+                html += `
+                    <div class="stakeholder-card ${state.currentSpeaker === s.id ? 'speaking' : ''}" id="stakeholder-${s.id}">
+                        <div class="stakeholder-name">
+                            <span>${s.icon} ${s.name}</span>
+                            <span class="satisfaction-badge ${satClass}">${sat}%</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${s.persona}</div>
+                        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                            ${Object.entries(s.priorities).map(([k, v]) => 
+                                `<span style="background: #e2e8f0; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.7rem;">${k}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            stakeholdersList.innerHTML = html;
+        }
+
+        function addMessage(type, text) {
+            if (!chatMessages) return;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+            
+            if (type === 'system') {
+                msgDiv.innerHTML = `
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">${text}<br><small>${time}</small></div>
+                `;
+            } else {
+                const stakeholder = STAKEHOLDERS.find(s => s.id === type);
+                msgDiv.innerHTML = `
+                    <div class="message-avatar">${stakeholder ? stakeholder.icon : '👤'}</div>
+                    <div class="message-content"><b>${stakeholder ? stakeholder.name : 'Unknown'}</b><br>${text}<br><small>${time}</small></div>
+                `;
+            }
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function drawGrid() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 0.5;
+            
+            for (let i = 0; i <= canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let i = 0; i <= canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+            
+            // Draw elements
+            state.elements.forEach((el, index) => {
+                const x = 50 + (index * 70) % 500;
+                const y = 50 + Math.floor((index * 70) / 500) * 70;
+                
+                ctx.fillStyle = el.type === 'playground' ? '#FFB6C1' :
+                               el.type === 'greenspace' ? '#90EE90' :
+                               el.type === 'cafe' ? '#D2B48C' :
+                               el.type === 'bench' ? '#8B4513' : '#94a3b8';
+                ctx.fillRect(x, y, 40, 30);
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Arial';
+                ctx.fillText(el.type.substring(0, 3), x + 5, y + 20);
+            });
+        }
+
+        function updateUI() {
+            if (areaSpan) areaSpan.textContent = state.totalArea;
+            if (budgetSpan) budgetSpan.textContent = Math.round(state.totalCost / 1000) + 'K';
+            
+            if (elementsList) {
+                if (state.elements.length === 0) {
+                    elementsList.innerHTML = '<p style="color: #999;">No elements yet</p>';
+                } else {
+                    elementsList.innerHTML = state.elements.map(e => 
+                        `<div style="padding: 0.25rem; border-bottom: 1px solid #eee;">
+                            ${e.type} - ${e.size || e.quantity} (by ${e.proposer})
+                        </div>`
+                    ).join('');
+                }
+            }
+            
+            renderStakeholders();
+        }
+
+        // ==================== GAME FUNCTIONS ====================
+        function startNegotiation() {
+            state.active = true;
+            if (startBtn) startBtn.disabled = true;
+            if (nextTurnBtn) nextTurnBtn.disabled = false;
+            if (voteBtn) voteBtn.disabled = false;
+            
+            addMessage('system', '🚀 Negotiation started!');
+            addMessage('system', '📍 Site: 100x100m, Budget: $1,000,000');
+        }
+
+        function nextTurn() {
+            if (!state.active || state.consensus) return;
+            
+            state.turn++;
+            const speaker = STAKEHOLDERS[(state.turn - 1) % STAKEHOLDERS.length];
+            state.currentSpeaker = speaker.id;
+            
+            renderStakeholders();
+            addMessage('system', `📢 Turn ${state.turn}: ${speaker.name}'s turn`);
+            
+            // Generate proposal
+            const types = ['playground', 'greenspace', 'cafe', 'bench'];
+            const proposal = {
+                type: types[Math.floor(Math.random() * types.length)],
+                size: Math.floor(Math.random() * 100) + 50,
+                proposer: speaker.name
+            };
+            
+            addMessage(speaker.id, `💡 I propose adding ${proposal.type} (${proposal.size}m²)`);
+            
+            // Add to design
+            state.elements.push(proposal);
+            state.totalArea += proposal.size;
+            state.totalCost += proposal.size * 500;
+            
+            // Reactions
+            STAKEHOLDERS.filter(s => s.id !== speaker.id).forEach(s => {
+                const reaction = Math.random() > 0.5 ? '👍 Support' : '🤔 Concerns';
+                addMessage(s.id, reaction);
+                
+                // Update satisfaction
+                if (reaction.includes('Support')) {
+                    state.satisfaction[s.id] = Math.min(100, state.satisfaction[s.id] + 5);
+                } else {
+                    state.satisfaction[s.id] = Math.max(0, state.satisfaction[s.id] - 5);
+                }
+            });
+            
+            drawGrid();
+            updateUI();
+            
+            // Voting prompt every 3 turns
+            if (state.turn % 3 === 0) {
+                if (voteBtn) voteBtn.classList.add('pulse');
+                addMessage('system', '🗳️ Time to vote!');
+            }
+        }
+
+        function conductVote() {
+            if (voteBtn) voteBtn.classList.remove('pulse');
+            
+            let yes = 0;
+            STAKEHOLDERS.forEach(s => {
+                const vote = state.satisfaction[s.id] > 60 ? 'yes' : 
+                            state.satisfaction[s.id] < 40 ? 'no' : 
+                            Math.random() > 0.5 ? 'yes' : 'no';
+                if (vote === 'yes') yes++;
+                addMessage(s.id, `I vote ${vote.toUpperCase()}`);
+            });
+            
+            const approval = (yes / STAKEHOLDERS.length) * 100;
+            addMessage('system', `📊 ${yes}/${STAKEHOLDERS.length} votes (${Math.round(approval)}%)`);
+            
+            if (approval >= 70) {
+                state.consensus = true;
+                addMessage('system', '🎉 CONSENSUS REACHED!');
+                if (nextTurnBtn) nextTurnBtn.disabled = true;
+                if (voteBtn) voteBtn.disabled = true;
+            }
+        }
+
+        function resetSession() {
+            state = {
+                turn: 0,
+                active: false,
+                consensus: false,
+                elements: [],
+                totalArea: 0,
+                totalCost: 0,
+                satisfaction: {},
+                tool: 'select'
+            };
+            
+            STAKEHOLDERS.forEach(s => state.satisfaction[s.id] = 50);
+            
+            if (startBtn) startBtn.disabled = false;
+            if (nextTurnBtn) nextTurnBtn.disabled = true;
+            if (voteBtn) {
+                voteBtn.disabled = true;
+                voteBtn.classList.remove('pulse');
+            }
+            
+            if (chatMessages) chatMessages.innerHTML = '';
+            addMessage('system', '🔄 Session reset. Click Start to begin.');
+            
+            drawGrid();
+            updateUI();
+        }
+
+        function handleCanvasClick(e) {
+            if (state.tool === 'select' || !state.active) return;
+            
+            const speaker = STAKEHOLDERS[Math.floor(Math.random() * STAKEHOLDERS.length)];
+            const proposal = {
+                type: state.tool,
+                size: 100,
+                proposer: speaker.name
+            };
+            
+            state.elements.push(proposal);
+            state.totalArea += 100;
+            state.totalCost += 50000;
+            
+            addMessage('system', `✏️ ${speaker.name} added ${state.tool} manually`);
+            drawGrid();
+            updateUI();
+        }
+
+        // Close modal with X button
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('close-btn')) {
+                if (settingsModal) settingsModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
